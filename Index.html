@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Positioning Chairs Animation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://via.placeholder.com/800x600?text=Office+Background');
+            background-size: cover;
+            background-position: center;
+        }
+        .room {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            border: 2px solid black;
+            background-color: rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+        }
+        .table {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            background-image: url('shopping-removebg-preview.png');
+            background-size: cover;
+        }
+        .chair {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('Screenshot_2025-03-13_121458-removebg-preview.png');
+            background-size: cover;
+            border-radius: 10px;
+            transition: transform 0.5s ease-in-out;
+        }
+        .obstacle {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background-image: url('chair-removebg-preview.png');
+            background-size: cover;
+  
+        }
+        .new-object {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background-image: url('chair-removebg-preview.png');
+            background-size: cover;
+          
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h2 class="mb-3">Self-Positioning Chairs Animation</h2>
+        <div class="room mx-auto">
+            <div class="table" style="top: 50px; left: 100px;"></div>
+            <div class="table" style="top: 50px; left: 300px;"></div>
+            <div class="chair" id="chair1" style="top: 400px; left: 400px;"></div>
+            <div class="chair" id="chair2" style="top: 350px; left: 50px;"></div>
+            <div class="obstacle" style="top: 250px; left: 250px;"></div>
+            <div class="obstacle" style="top: 180px; left: 320px;"></div>
+            <div class="new-object" style="top: 300px; left: 150px;"></div>
+        </div>
+    </div>
+    
+    <script>
+        class Chair {
+            constructor(elementId) {
+                this.chair = document.getElementById(elementId);
+                this.chairX = this.chair.offsetLeft;
+                this.chairY = this.chair.offsetTop;
+            }
+
+            findNearestTable() {
+                let nearestTable = null;
+                let minDistance = Infinity;
+                
+                document.querySelectorAll(".table").forEach(table => {
+                    let tableX = table.offsetLeft;
+                    let tableY = table.offsetTop;
+                    let distance = Math.sqrt((this.chairX - tableX) ** 2 + (this.chairY - tableY) ** 2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestTable = { x: tableX, y: tableY };
+                    }
+                });
+                return nearestTable;
+            }
+
+            moveChair() {
+                let target = this.findNearestTable();
+                if (!target) return;
+                
+                let dx = target.x - this.chairX;
+                let dy = target.y - this.chairY;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 10) return;
+                
+                let stepX = (dx / distance) * 10;
+                let stepY = (dy / distance) * 10;
+                
+                document.querySelectorAll(".obstacle, .new-object, .chair").forEach(obs => {
+                    if (obs !== this.chair) {
+                        let obsX = obs.offsetLeft;
+                        let obsY = obs.offsetTop;
+                        if (Math.abs(this.chairX - obsX) < 50 && Math.abs(this.chairY - obsY) < 50) {
+                            if (Math.random() > 0.5) {
+                                stepX *= -1;
+                            } else {
+                                stepY *= -1;
+                            }
+                        }
+                    }
+                });
+                
+                this.chairX += stepX;
+                this.chairY += stepY;
+                this.chair.style.transform = `translate(${this.chairX - this.chair.offsetLeft}px, ${this.chairY - this.chair.offsetTop}px)`;
+                setTimeout(() => this.moveChair(), 300);
+            }
+        }
+        
+        const chair1 = new Chair("chair1");
+        const chair2 = new Chair("chair2");
+        
+        chair1.moveChair();
+        chair2.moveChair();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
